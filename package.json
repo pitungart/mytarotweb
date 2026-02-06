@@ -1,0 +1,21 @@
+{
+  "name": "ai-tarot-reader",
+  "version": "1.0.0",
+  "description": "Aplikasi AI Tarot dengan Firebase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1"
+  },
+  "keywords": [
+    "tarot",
+    "firebase",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT"
+}
