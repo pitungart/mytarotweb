@@ -8,8 +8,10 @@
     "dev": "node server.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "dotenv": "^16.6.1",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "firebase": "^12.9.0"
   },
   "keywords": [
     "tarot",

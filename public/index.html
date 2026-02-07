@@ -1,58 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tarot Reader - Temukan Takdirmu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Ethereal Archive | AI Tarot</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400&display=swap"
+        rel="stylesheet">
+
+    <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#050208',
+                        royal: '#1e0b36',
+                        silver: '#f8fafc',
+                        'silver-dim': '#94a3b8',
+                        gold: '#9D814C',
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'grain': "url('https://upload.wikimedia.org/wikipedia/commons/7/76/Noise.png')",
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
-    <style>
-        .perspective { perspective: 1000px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-950 to-slate-950">
-    
-    <div class="max-w-5xl mx-auto px-6 py-12">
-        <header class="text-center mb-16 animate-fade-in">
-            <h1 class="text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-4 tracking-tighter">
-                AI Tarot Reader
+
+<body class="bg-obsidian text-silver min-h-screen overflow-x-hidden selection:bg-purple-900/30 font-sans">
+
+    <!-- 1. Background System -->
+    <!-- Gradient Base -->
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_center,_#1e0b36_0%,_#050208_80%)] -z-30"></div>
+
+    <!-- p5.js Star Background Container -->
+    <div id="star-canvas" class="fixed inset-0 -z-20 pointer-events-none mix-blend-screen opacity-60"></div>
+
+    <!-- Grain Overlay -->
+    <div class="fixed inset-0 pointer-events-none opacity-[0.07] z-50 bg-grain animate-grain mix-blend-overlay"></div>
+
+    <!-- Alert Container (Fixed Top) -->
+    <div id="alert-container"
+        class="fixed top-0 left-0 w-full z-[60] flex flex-col items-center gap-2 pt-4 px-4 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-md md:max-w-4xl mx-auto px-6 py-12 md:py-20 flex flex-col min-h-screen">
+
+        <!-- Header: Minimalist Editorial -->
+        <header class="text-center mb-16 md:mb-24 relative animate-fade-in-up">
+            <h1
+                class="font-serif text-5xl md:text-7xl italic font-light tracking-tight mb-2 text-gold drop-shadow-[0_0_15px_rgba(157,129,76,0.3)]">
+                Vesta Arcana
             </h1>
-            <p class="text-slate-400 italic text-lg">Konsultasikan pertanyaanmu pada semesta melalui kartu.</p>
+            <p class="font-sans text-[10px] md:text-xs uppercase tracking-[0.4em] text-gold/60 mb-6">Oracle Digital •
+                Version v1.0b</p>
+
+            <div class="max-w-xs mx-auto mb-8 opacity-60">
+                <p class="font-serif italic text-silver/40 text-sm md:text-base leading-relaxed">
+                    "Penyelarasan algoritma kosmik untuk menyingkap tabir masa depan melalui simbolisme Arkana yang
+                    sakral."
+                </p>
+            </div>
+
+            <!-- Floating Card Icon Decor -->
+            <div
+                class="flex justify-center gap-2 mb-12 opacity-40 group hover:opacity-100 transition-opacity duration-1000">
+                <div class="w-8 h-12 border border-gold/30 rounded bg-gold/5 -rotate-12 translate-y-2"></div>
+                <div class="w-8 h-12 border border-gold/50 rounded bg-gold/10 z-10 shadow-lg"></div>
+                <div class="w-8 h-12 border border-gold/30 rounded bg-gold/5 rotate-12 translate-y-2"></div>
+            </div>
+
+            <!-- Authentikasi (Unified) -->
+            <div id="auth-container" class="flex justify-center mt-8 animate-fade-in-up transition-all duration-500">
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-gold/20 to-gold/5 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000">
+                    </div>
+                    <button id="login-btn"
+                        class="relative text-[10px] uppercase tracking-[0.2em] text-gold/60 hover:text-gold border border-gold/10 bg-white/5 backdrop-blur-md px-8 py-3 rounded-full hover:bg-gold/10 hover:border-gold/30 transition-all duration-500 shadow-lg">
+                        Masuk
+                    </button>
+                </div>
+            </div>
+
+            <div id="user-profile" class="hidden justify-center items-center gap-4 mt-8 animate-fade-in-up">
+                <div
+                    class="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-2 rounded-full">
+                    <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></span>
+                    <span id="user-name" class="font-sans text-[10px] tracking-widest uppercase text-silver"></span>
+                </div>
+                <button id="logout-btn"
+                    class="text-[10px] uppercase tracking-widest text-silver-dim/60 hover:text-red-400 transition-colors border-b border-transparent hover:border-red-400/50 pb-px">Keluar</button>
+            </div>
         </header>
 
-        <nav class="flex justify-center gap-4 mb-12">
-            <button id="login-btn" class="bg-white text-slate-950 font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                Login with Google
-            </button>
-            <div id="user-profile" class="hidden items-center gap-4">
-                <span id="user-name" class="text-purple-300 font-medium"></span>
-                <button id="logout-btn" class="border border-slate-700 hover:bg-slate-800 text-white py-2 px-6 rounded-full transition-all">
-                    Logout
-                </button>
-            </div>
-        </nav>
+        <main class="flex-grow">
 
-        <main class="max-w-2xl mx-auto mb-16 bg-slate-900/50 p-8 rounded-3xl border border-slate-800 backdrop-blur-sm shadow-2xl">
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-purple-400 uppercase tracking-widest mb-3">Apa yang ingin kamu ketahui?</label>
-                    <input type="text" id="question-input" 
-                           class="w-full bg-slate-800/50 border-2 border-slate-700 focus:border-purple-500 rounded-2xl py-4 px-6 outline-none transition-all text-lg placeholder:text-slate-600" 
-                           placeholder="Misal: Bagaimana prospek karir saya?">
+            <!-- Inquiry Section: Modern Minimalist -->
+            <div id="inquiry-section" class="mb-20 transition-all duration-1000 ease-in-out">
+                <div class="relative group max-w-2xl mx-auto text-center">
+                    <label class="block font-sans text-[9px] uppercase tracking-[0.3em] text-gold/60 mb-6">Konsultasikan
+                        Garis Arkana</label>
+                    <div class="relative inline-block w-full">
+                        <textarea id="question-input" rows="1"
+                            class="w-full bg-transparent border-b border-silver/10 py-4 text-2xl md:text-4xl font-serif text-center text-silver placeholder:text-silver/10 outline-none transition-all focus:border-gold/50 resize-none overflow-hidden leading-relaxed"
+                            placeholder="Bisikkan takdirmu..."></textarea>
+
+                        <!-- Minimalist Focus Line -->
+                        <div
+                            class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-gold/70 transition-all duration-700 ease-out group-focus-within:w-1/2">
+                        </div>
+                    </div>
                 </div>
-                <button id="draw-btn" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-purple-500/20 transition-all uppercase tracking-widest active:scale-95">
-                    Buka Kartu Takdir
-                </button>
+
+                <div class="mt-12 flex justify-center">
+                    <button id="draw-btn"
+                        class="group relative px-10 py-4 overflow-hidden rounded-full border border-silver/5 hover:border-gold/30 transition-all duration-500 bg-white/5 backdrop-blur-sm hover:bg-gold/5 shadow-lg hover:shadow-[0_0_30px_rgba(157,129,76,0.15)] active:scale-[0.98]">
+                        <span
+                            class="relative z-10 font-sans text-[10px] uppercase tracking-[0.3em] text-gold/60 group-hover:text-gold transition-colors">Mulai
+                            Ritual</span>
+                    </button>
+                </div>
             </div>
+
+            <!-- Ritual Loading Canvas Container -->
+            <div id="ritual-container"
+                class="hidden fixed inset-0 z-40 bg-obsidian/30 backdrop-blur-md flex flex-col items-center justify-center p-8">
+                <div id="mandala-canvas" class="w-[300px] h-[300px] md:w-[300px] md:h-[300px] opacity-90"></div>
+                <!-- Text feedback will be injected by JS -->
+                <p id="ritual-status" class="mt-8 font-serif italic text-silver-dim animate-pulse tracking-wide">
+                    Mengocok takdir...</p>
+            </div>
+
+            <!-- Cards Display: Vertical Stack / Grid -->
+            <div id="cards-container" class="flex flex-col md:grid md:grid-cols-3 gap-12 md:gap-8 pb-3">
+                <!-- Cards injected here -->
+            </div>
+
         </main>
 
-        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+        <footer class="mt-20 pb-12 border-t border-gold/10 pt-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start opacity-80">
+                <!-- Left Side: Philosophy -->
+                <div class="text-left space-y-4">
+                    <h4 class="font-serif italic text-gold text-2xl">Vesta Arcana</h4>
+                    <p class="font-sans text-[10px] tracking-widest text-silver/40 uppercase leading-relaxed">
+                        Menembus tabir antara algoritma dan intuisi. <br>
+                        Dirancang untuk membantu jiwa menemukan navigasi di tengah ketidakpastian kosmik.
+                    </p>
+                    <div class="pt-6">
+                        <a href="https://trakteer.id/pitung_art/tip" target="_blank"
+                            class="relative inline-flex items-center gap-3 px-8 py-4 bg-gold/10 border border-gold/30 rounded-2xl group hover:bg-gold/20 hover:border-gold transition-all duration-700 shadow-[0_0_30px_rgba(157,129,76,0.1)] hover:shadow-[0_0_50px_rgba(157,129,76,0.3)]">
+                            <!-- Pulse Effect -->
+                            <span
+                                class="absolute -inset-1 bg-gold/20 rounded-2xl blur-lg animate-pulse-slow opacity-0 group-hover:opacity-100 transition-opacity"></span>
+
+                            <svg class="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                            <span
+                                class="relative font-serif italic text-gold text-lg group-hover:tracking-wider transition-all duration-700">Dukung
+                                Ritual</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Side: Links -->
+                <div class="grid grid-cols-2 gap-8 text-left">
+                    <div class="space-y-4">
+                        <p
+                            class="font-sans text-[9px] uppercase tracking-[0.3em] text-gold/40 border-b border-gold/10 pb-2">
+                            Koneksi</p>
+                        <ul class="space-y-3">
+                            <li><a href="https://www.instagram.com/ang.9_a/" target="_blank"
+                                    class="font-sans text-[10px] tracking-widest text-silver/60 hover:text-gold transition-colors uppercase">Instagram</a>
+                            </li>
+                            <li><a href="https://github.com/pitungart" target="_blank"
+                                    class="font-sans text-[10px] tracking-widest text-silver/60 hover:text-gold transition-colors uppercase">GitHub</a>
+                            </li>
+                            <li><a href="https://wa.me/6285338614415" target="_blank"
+                                    class="font-sans text-[10px] tracking-widest text-silver/60 hover:text-gold transition-colors uppercase">WhatsApp</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <p
+                            class="font-sans text-[9px] uppercase tracking-[0.3em] text-gold/40 border-b border-gold/10 pb-2">
+                            Metadata</p>
+                        <div class="space-y-1">
+                            <p class="font-sans text-[9px] text-silver/30 uppercase tracking-widest">Version v1.0b</p>
+                            <p class="font-sans text-[9px] text-silver/30 uppercase tracking-widest">&copy; 2026 Pitung
+                                Art</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <p class="font-sans text-[8px] uppercase tracking-[0.5em] text-gold/20 italic">Curated by the digital
+                    stars for your ethereal journey</p>
+            </div>
+        </footer>
     </div>
 
+    <!-- P5.js Sketches -->
+    <script src="star-background.js"></script> <!-- New star background script -->
+    <script src="ritual-shuffle.js"></script> <!-- New shuffle animation script -->
+    <script src="card-art.js"></script> <!-- Procedural Card Art -->
     <script src="app.js"></script>
 </body>
+
 </html>

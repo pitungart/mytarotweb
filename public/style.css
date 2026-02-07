@@ -2,26 +2,126 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Kustomisasi Scrollbar agar terlihat lebih modern */
+/* Fonts loaded via Google Fonts in HTML */
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 0px;
+    background: transparent;
 }
 
-::-webkit-scrollbar-track {
-    background: #020617;
+/* Grain Animation */
+@keyframes grain {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    10% {
+        transform: translate(-5%, -10%);
+    }
+
+    20% {
+        transform: translate(-15%, 5%);
+    }
+
+    30% {
+        transform: translate(7%, -25%);
+    }
+
+    40% {
+        transform: translate(-5%, 25%);
+    }
+
+    50% {
+        transform: translate(-15%, 10%);
+    }
+
+    60% {
+        transform: translate(15%, 0%);
+    }
+
+    70% {
+        transform: translate(0%, 15%);
+    }
+
+    80% {
+        transform: translate(3%, 35%);
+    }
+
+    90% {
+        transform: translate(-10%, 10%);
+    }
 }
 
-::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 10px;
+.animate-grain {
+    animation: grain 6s steps(10) infinite;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+.animate-fade-in-up {
+    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Memastikan gambar tarot proporsional */
-img {
-    user-drag: none;
-    -webkit-user-drag: none;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Interaction */
+.card-stack-enter {
+    animation: stackEnter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes stackEnter {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Grayscale Transition */
+.grayscale-card {
+    filter: grayscale(100%) contrast(1.1);
+    transition: filter 0.8s ease;
+}
+
+.grayscale-card:hover,
+.card-active .grayscale-card {
+    filter: grayscale(0%) contrast(1);
+}
+
+/* Aura Glow Animation */
+@keyframes auraPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+    }
+}
+
+.aura-glow {
+    animation: auraPulse 4s infinite ease-in-out;
+}
+
+#defaultCanvas1 {
+    width: 100% !important;
+    height: 300px !important;
 }
