@@ -23,9 +23,13 @@ app.get('/api/firebase-config', (req, res) => {
     });
 });
 
+// Handle favicon.ico 404
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Endpoint AI Tarot Analytic
 app.post('/api/analyze-tarot', express.json(), async (req, res) => {
     const { question, cards } = req.body;
+    console.log("Menerima permintaan AI:", { question, cardCount: cards?.length });
 
     if (!question || !cards || cards.length === 0) {
         return res.status(400).json({ error: "Data tidak lengkap" });
